@@ -11,27 +11,23 @@ const dotenv = require("dotenv")
 dotenv.config()
 
 
-
 app.use(
+
     express.urlencoded({
+
         extended: true,
 
     }),
+
 )
-
-
 
 
 app.use(express.json())
 
 
-
-
-
 mongoose
+
  .connect(`mongodb+srv://Barbantti:${encodeURIComponent(process.env.MONGO_PASSWORD)}@restfulapibanco.1guqohw.mongodb.net/?retryWrites=true&w=majority`)
-
-
 
 
  .then(() => {
@@ -40,25 +36,21 @@ mongoose
     
     app.listen(3000)
 
-
  })
 
 
  .catch((err) => console.log(err))
 
-
  app.get("/", (req, res) => {
 
-    res.json({ message: "Oi Express!" });
+    res.json({ message: "Oi Express!" })
 
-});
+})
 
 
  app.post('/person', async (req, res) => {
 
     const { name, salary, approved } = req.body
-
-
 
     const person = {
 
@@ -71,13 +63,9 @@ mongoose
     }
 
 
-
-
     try {
 
         const addPerson = await Person.create(person)
-
-
 
         res.status(201).json({ message: 'Pessoa inserida no sistema com sucesso!' }) 
         
@@ -91,20 +79,21 @@ mongoose
 
     }
     
+
  })
 
  app.get('/person', async (req, res) => {
 
-
     try {
+
         const people = await Person.find() 
 
         res.status(200).json(people)
 
-
     } catch (error) {
 
         res.status(500).json({ erro: error })
+
     }
 
  })
@@ -113,7 +102,6 @@ mongoose
     
     const id = req.params.id
 
-
     try {
 
         const person = await Person.findOne({ _id: id })
@@ -121,7 +109,6 @@ mongoose
         if (!person) {
             
             res.redirect(`/person/error/${id}`)
-
 
             return
 
@@ -137,6 +124,7 @@ mongoose
 
  })
 
+
  app.get('/person/error/:id', async (req, res) => {
 
     const id = req.params.id
@@ -145,9 +133,10 @@ mongoose
 
  })
 
- app.patch('/person/id:', async (req, res) => {
+ 
+ app.patch('/person/:id', async (req, res) => {
 
-    const id = req.params.id
+    const id = req.params.id.trim()
 
     const { name, salary, approved } = req.body
 
@@ -163,9 +152,9 @@ mongoose
 
     try {
 
-        const updatedPerson = await Person.updateOne({_id: id}, person)
+        const updatedPerson = await Person.updateOne({ _id: id }, person)
 
-        if (updatedPerson.matchedCount === 0) {
+        if (updatedPerson.nModified === 0) {
 
             res.status(422).json({ message: 'Usuário não encontrado!'})
 
@@ -179,6 +168,36 @@ mongoose
 
         res.status(500).json({ erro: error})
         
+    }
+
+ })
+
+
+ app.delete('/person/:id', async (req, res) => {
+
+    const id = req.params.id.trim()
+
+    const person = await Person.findOne({ _id: id })
+
+    if (!person) {
+
+        res.status(422).json({ message: 'Usuário não encontrado!'})
+
+        return
+
+    }
+
+
+    try {
+
+        await Person.deleteOne({ _id: id })
+
+        res.status(200).json({ message: 'Usuário removido com sucesso!'})
+
+    } catch (error) {
+
+        res.status(500).json({ erro: error })
+
     }
 
  })
