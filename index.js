@@ -95,11 +95,90 @@ mongoose
 
  app.get('/person', async (req, res) => {
 
+
     try {
         const people = await Person.find() 
 
         res.status(200).json(people)
+
+
     } catch (error) {
-        res.status(500).json({ erro: error})
+
+        res.status(500).json({ erro: error })
     }
+
+ })
+
+ app.get('/person/:id', async (req, res) => {
+    
+    const id = req.params.id
+
+
+    try {
+
+        const person = await Person.findOne({ _id: id })
+
+        if (!person) {
+            
+            res.redirect(`/person/error/${id}`)
+
+
+            return
+
+        }
+
+        res.status(200).json(person)
+
+    } catch (error) {
+
+        res.status(500).json({ erro: error })
+
+    }
+
+ })
+
+ app.get('/person/error/:id', async (req, res) => {
+
+    const id = req.params.id
+
+    res.status(422).json({ message: 'Usuário não encontrado!'})
+
+ })
+
+ app.patch('/person/id:', async (req, res) => {
+
+    const id = req.params.id
+
+    const { name, salary, approved } = req.body
+
+    const person = {
+
+        name,
+
+        salary,
+
+        approved,
+
+    }
+
+    try {
+
+        const updatedPerson = await Person.updateOne({_id: id}, person)
+
+        if (updatedPerson.matchedCount === 0) {
+
+            res.status(422).json({ message: 'Usuário não encontrado!'})
+
+            return
+
+        }
+
+        res.status(200).json(person)
+
+    } catch (error) {
+
+        res.status(500).json({ erro: error})
+        
+    }
+
  })
